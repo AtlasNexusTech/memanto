@@ -251,6 +251,14 @@ def mount_ui_static(app):
                 return FileResponse(index_path)
             raise HTTPException(status_code=404, detail="UI not found")
 
+        # Mnemosyne dashboard (Atlas Nexus style) at /mnemosyne
+        @app.get("/mnemosyne", response_class=HTMLResponse, include_in_schema=False)
+        async def serve_mnemosyne():
+            mnemosyne_path = STATIC_DIR / "mnemosyne.html"
+            if mnemosyne_path.exists():
+                return FileResponse(mnemosyne_path)
+            raise HTTPException(status_code=404, detail="Mnemosyne UI not found")
+
         # Mount static assets (CSS, JS, images) under /ui/static
         app.mount(
             "/ui/static", StaticFiles(directory=str(STATIC_DIR)), name="ui_static"

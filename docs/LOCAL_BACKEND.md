@@ -37,6 +37,27 @@ uvicorn memanto.app.main:app --port 8000
 
 En mode local, n'importe quel Bearer token est accepté (`Authorization: Bearer local`).
 
+## Dashboard web — Mnemosyne
+
+Une interface web pour visualiser et interroger la mémoire des agents,
+dans le style Atlas Nexus (dark, accents bleu/vert) :
+
+```bash
+uvicorn memanto.app.main:app --port 8000
+# puis ouvrir http://localhost:8000/mnemosyne
+```
+
+Fonctionnalités :
+- Liste des agents (mémoires, sessions) + stats globales
+- Clic sur un agent → activation de session automatique + listing de ses mémoires
+- Recherche sémantique (recall) avec scores de similarité affichés
+- Badges par type (fact/preference/learning/experience/skill), provenance,
+  confiance, détection de contradictions (rouge) et supersede (barré)
+- Création d'agent depuis l'interface
+
+Le fichier vit dans `memanto/app/ui/static/mnemosyne.html` (single-file,
+sans build). L'UI upstream Moorcheh reste disponible sur `/ui`.
+
 ## Démo rapide (HTTP)
 
 ```bash

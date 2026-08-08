@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mnemosyne — Mémoire des agents</title>
+<meta name="description" content="Mnemosyne — visualisez et interrogez la mémoire persistante des agents IA.">
+<style>
+  :root {
+    --bg: #0b1120;
+    --surface: #111827;
+    --card: #1a2235;
+    --border: #2a3550;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #2563eb;
+    --accent2: #059669;
+    --accent3: #7c3aed;
+    --gold: #e5c800;
+    --danger: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .logo {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #2563eb, #059669);
+    display: grid; place-items: center;
+    font-weight: 900; color: #fff; font-size: 1.2rem;
+    box-shadow: 0 8px 24px -8px rgba(37,99,235,.5);
+  }
+  h1 { font-size: 1.5rem; font-weight: 800; }
+  .sub { color: var(--muted); font-size: .85rem; margin-top: 2px; }
+  .actions { margin-left: auto; display: flex; gap: .5rem; flex-wrap: wrap; }
+  button, .btn {
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: .5rem 1rem; font-size: .85rem; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: #1d4ed8; }
+  input, select, textarea {
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: .5rem .75rem; font-size: .85rem; font-family: inherit;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 1.25rem; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem;
+  }
+  .card h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 1rem; }
+  .agent {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .75rem; border-radius: 10px; cursor: pointer;
+    border: 1px solid transparent; transition: all .15s;
+  }
+  .agent:hover { background: var(--surface); }
+  .agent.active { background: var(--surface); border-color: var(--accent); }
+  .agent-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    display: grid; place-items: center; font-weight: 800; font-size: .8rem;
+    background: linear-gradient(135deg, #2563eb33, #05966933);
+    color: var(--accent2);
+  }
+  .agent-info { flex: 1; min-width: 0; }
+  .agent-name { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-meta { color: var(--muted); font-size: .75rem; }
+  .badge {
+    display: inline-block; padding: .15rem .5rem; border-radius: 999px;
+    font-size: .68rem; font-weight: 700; letter-spacing: .02em;
+  }
+  .badge.fact { background: #2563eb22; color: #60a5fa; }
+  .badge.preference { background: #05966922; color: #34d399; }
+  .badge.learning { background: #7c3aed22; color: #a78bfa; }
+  .badge.experience { background: #e5c80022; color: #facc15; }
+  .badge.skill { background: #ef444422; color: #f87171; }
+  .badge.count { background: #1a2235; color: var(--muted); }
+  .badge.score { background: #2563eb22; color: #60a5fa; }
+  .memory {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: .9rem 1rem; margin-bottom: .75rem;
+  }
+  .memory-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; flex-wrap: wrap; }
+  .memory-title { font-weight: 700; font-size: .9rem; }
+  .memory-content { color: var(--muted); font-size: .85rem; line-height: 1.5; }
+  .memory-meta { margin-top: .5rem; font-size: .72rem; color: var(--muted); display: flex; gap: .75rem; flex-wrap: wrap; }
+  .memory-meta .prov { color: #64748b; }
+  .search-bar { display: flex; gap: .5rem; margin-bottom: 1rem; }
+  .search-bar input { flex: 1; }
+  .empty { color: var(--muted); text-align: center; padding: 2rem; font-size: .85rem; }
+  .stat-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .stat {
+    flex: 1; min-width: 120px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px; padding: .75rem 1rem;
+  }
+  .stat .val { font-size: 1.3rem; font-weight: 800; }
+  .stat .lbl { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; }
+  .val.blue { color: #60a5fa; } .val.green { color: #34d399; } .val.gold { color: #facc15; } .val.purple { color: #a78bfa; }
+  .err { color: var(--danger); font-size: .8rem; margin-top: .5rem; }
+  .contradiction { border-color: #ef444466; }
+  .contradiction .memory-title { color: #f87171; }
+  .superseded { opacity: .5; }
+  .superseded .memory-title { text-decoration: line-through; }
+  footer { text-align: center; color: #475569; font-size: .75rem; margin-top: 3rem; }
+  .spin {
+    display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%; animation: rot .7s linear infinite;
+    vertical-align: -2px; margin-right: 6px;
+  }
+  @keyframes rot { to { transform: rotate(360deg); } }
+  .flash { color: #34d399; font-size: .8rem; margin-top: .5rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">Μ</div>
+    <div>
+      <h1>Mnemosyne</h1>
+      <div class="sub">La mémoire persistante des agents IA</div>
+    </div>
+    <div class="actions">
+      <button onclick="refreshAgents()" id="btnRefresh">↻ Actualiser</button>
+      <button class="primary" onclick="createAgentPrompt()">+ Agent</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Colonne gauche : agents -->
+    <div>
+      <div class="card">
+        <h2>Agents</h2>
+        <div id="agentList"><div class="empty">Chargement…</div></div>
+      </div>
+      <div class="card">
+        <h2>Stats globales</h2>
+        <div id="globalStats"><div class="empty">—</div></div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : mémoire -->
+    <div>
+      <div class="card">
+        <h2 id="memTitle">Mémoire de l'agent</h2>
+        <div class="search-bar">
+          <input id="query" placeholder="Recherche sémantique… ex: préférences du client" onkeydown="if(event.key==='Enter')doRecall()">
+          <button onclick="doRecall()">Rechercher</button>
+        </div>
+        <div id="memories"><div class="empty">Sélectionnez un agent pour voir sa mémoire.</div></div>
+        <div id="searchStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Mnemosyne · mémoire agentique · backend local SQLite</footer>
+</div>
+
+<script>
+let agents = [];
+let currentAgent = null;
+let sessionToken = localStorage.getItem('mnemosyne_session') || null;
+const TOKEN = localStorage.getItem('mnemosyne_token') || 'local';
+
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + TOKEN } };
+  if (body !== undefined) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    let detail = res.status;
+    try { detail = (await res.json()).detail || detail; } catch (e) {}
+    throw new Error('HTTP ' + res.status + ' : ' + (typeof detail === 'string' ? detail : JSON.stringify(detail).slice(0, 120)));
+  }
+  return res.json();
+}
+
+async function ensureSession(agentId) {
+  // Activate (or keep) a session for this agent and return its token.
+  try {
+    const data = await api('POST', `/api/v2/agents/${agentId}/activate`);
+    if (data && data.session_token) {
+      sessionToken = data.session_token;
+      localStorage.setItem('mnemosyne_session', sessionToken);
+    }
+    return sessionToken;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function apiWithSession(method, path, body) {
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + TOKEN } };
+  if (sessionToken) opts.headers['X-Session-Token'] = sessionToken;
+  if (body !== undefined) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    let detail = res.status;
+    try { detail = (await res.json()).detail || detail; } catch (e) {}
+    throw new Error('HTTP ' + res.status + ' : ' + (typeof detail === 'string' ? detail : JSON.stringify(detail).slice(0, 120)));
+  }
+  return res.json();
+}
+
+async function refreshAgents() {
+  const list = document.getElementById('agentList');
+  try {
+    const data = await api('GET', '/api/v2/agents');
+    agents = data.agents || [];
+    if (!agents.length) {
+      list.innerHTML = '<div class="empty">Aucun agent. Créez-en un avec « + Agent ».</div>';
+    } else {
+      list.innerHTML = agents.map(a => `
+        <div class="agent ${currentAgent === a.agent_id ? 'active' : ''}" onclick="selectAgent('${a.agent_id}')">
+          <div class="agent-icon">${(a.agent_id || '?')[0].toUpperCase()}</div>
+          <div class="agent-info">
+            <div class="agent-name">${escapeHtml(a.agent_id)}</div>
+            <div class="agent-meta">${a.memory_count ?? 0} mémoires · ${a.session_count ?? 0} sessions</div>
+          </div>
+        </div>`).join('');
+    }
+    renderGlobalStats();
+  } catch (e) {
+    list.innerHTML = `<div class="empty err">Erreur : ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderGlobalStats() {
+  const el = document.getElementById('globalStats');
+  if (!agents.length) { el.innerHTML = '<div class="empty">—</div>'; return; }
+  const totalMem = agents.reduce((s, a) => s + (a.memory_count || 0), 0);
+  const totalSess = agents.reduce((s, a) => s + (a.session_count || 0), 0);
+  el.innerHTML = `
+    <div class="stat-row">
+      <div class="stat"><div class="val blue">${agents.length}</div><div class="lbl">Agents</div></div>
+      <div class="stat"><div class="val green">${totalMem}</div><div class="lbl">Mémoires</div></div>
+      <div class="stat"><div class="val gold">${totalSess}</div><div class="lbl">Sessions</div></div>
+    </div>`;
+}
+
+async function selectAgent(id) {
+  currentAgent = id;
+  document.getElementById('memTitle').textContent = 'Mémoire de ' + id;
+  document.getElementById('query').value = '';
+  refreshAgents();
+  await ensureSession(id);
+  await loadMemories(id);
+}
+
+async function loadMemories(agentId, query) {
+  const box = document.getElementById('memories');
+  const status = document.getElementById('searchStatus');
+  box.innerHTML = '<div class="empty"><span class="spin"></span>Rappel en cours…</div>';
+  status.textContent = '';
+  try {
+    const params = new URLSearchParams();
+    if (query) {
+      params.set('query', query);
+      params.set('limit', '20');
+    } else {
+      // Empty query lists all memories (local backend returns everything
+      // at score 0 when the query is empty — no threshold applied).
+      params.set('query', '');
+      params.set('limit', '50');
+    }
+    const path = `/api/v2/agents/${agentId}/recall?${params}`;
+    const data = await apiWithSession('GET', path);
+    const mems = data.memories || data.results || [];
+    if (!mems.length) {
+      box.innerHTML = '<div class="empty">Aucune mémoire pour cet agent.</div>';
+      return;
+    }
+    box.innerHTML = mems.map(m => renderMemory(m)).join('');
+    if (query) {
+      status.innerHTML = `<div class="flash">${mems.length} résultat(s) — scores de similarité affichés</div>`;
+    }
+  } catch (e) {
+    box.innerHTML = `<div class="empty err">Erreur : ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderMemory(m) {
+  const type = (m.type || 'fact').toLowerCase();
+  const score = m.score !== undefined && m.score !== null
+    ? `<span class="badge score">score ${Number(m.score).toFixed(3)}</span>` : '';
+  const prov = m.provenance ? `<span class="prov">provenance: ${escapeHtml(m.provenance)}</span>` : '';
+  const contrad = m.contradiction_detected ? 'contradiction' : '';
+  const superseded = m.superseded_by ? 'superseded' : '';
+  const created = m.created_at ? new Date(m.created_at).toLocaleDateString('fr-FR') : '';
+  return `
+    <div class="memory ${contrad} ${superseded}">
+      <div class="memory-head">
+        <span class="badge ${type}">${escapeHtml(type)}</span>
+        ${score}
+        <span class="memory-title">${escapeHtml(m.title || m.id || '')}</span>
+      </div>
+      <div class="memory-content">${escapeHtml(m.content || m.text || '')}</div>
+      <div class="memory-meta">${prov}${created ? '<span>' + created + '</span>' : ''}${m.confidence !== null && m.confidence !== undefined ? '<span>confiance ' + Number(m.confidence).toFixed(2) + '</span>' : ''}</div>
+    </div>`;
+}
+
+function doRecall() {
+  const q = document.getElementById('query').value.trim();
+  if (!currentAgent) { alert('Sélectionnez d\'abord un agent.'); return; }
+  loadMemories(currentAgent, q || undefined);
+}
+
+async function createAgentPrompt() {
+  const id = prompt('ID du nouvel agent :', 'agent-' + Math.random().toString(36).slice(2, 8));
+  if (!id) return;
+  try {
+    await api('POST', '/api/v2/agents', { agent_id: id, display_name: id, pattern: 'support' });
+    await refreshAgents();
+    await selectAgent(id);
+  } catch (e) {
+    alert('Erreur : ' + e.message);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+refreshAgents();
+</script>
+</body>
+</html>
