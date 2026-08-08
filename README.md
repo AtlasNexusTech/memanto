@@ -5,8 +5,24 @@
 </p>
 
 <div align="center">
-  <h1>Memanto - Memory that AI Agents Love!</h1>
+  <h1>Mnemosyne — Memory that AI Agents Love!</h1>
+  <p><em>Memanto, le fork open-source qui alimente Mnemosyne dans l'écosystème Atlas Nexus.</em></p>
 </div>
+
+> ## 🧠 Mnemosyne — mode local autonome
+>
+> Depuis la branche Atlas Nexus, Mnemosyne fonctionne **sans compte cloud et
+> sans clé API** : mémoire persistante en SQLite, recherche sémantique par
+> embeddings, et LLM local optionnel (Ollama) pour les réponses rédigées et
+> la détection de contradictions.
+>
+> 📖 Voir **[docs/LOCAL_BACKEND.md](docs/LOCAL_BACKEND.md)** pour :
+> l'activation (`MEMANTO_BACKEND=local`), la démo HTTP complète,
+> l'architecture du backend local et les limitations.
+>
+> Le reste de ce README documente le projet open-source upstream.
+
+---
 
 <p align="center">
   <a href="https://memanto.ai/">

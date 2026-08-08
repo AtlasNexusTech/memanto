@@ -1,3 +1,3 @@
 """
-Memanto - Memory that AI Agents Love!
+Mnemosyne - Memory that AI Agents Love!
 """

@@ -13,8 +13,8 @@ from memanto.app.ui.routes.ui_router import router as ui_router
 
 # Create FastAPI app
 app = FastAPI(
-    title="Memanto - Memory that AI Agents Love!",
-    description="A memory layer service for agentic AI systems using Moorcheh SDK",
+    title="Mnemosyne - Memory that AI Agents Love!",
+    description="Mnemosyne — a memory layer service for agentic AI systems. Autonomous local backend (SQLite + embeddings) or Moorcheh cloud.",
     version=__version__,
     docs_url="/docs",
     redoc_url="/redoc",

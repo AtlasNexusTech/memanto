@@ -1,12 +1,13 @@
-# Memanto — Mode local autonome (SQLite)
+# Mnemosyne — Mode local autonome (SQLite)
 
-Memanto fonctionne maintenant **sans compte cloud, sans clé API** grâce au
-backend local : vos agents gardent une mémoire persistante dans un fichier
-SQLite, avec recherche sémantique par embeddings.
+Mnemosyne (la mémoire des agents, alimentée par le fork open-source Memanto)
+fonctionne maintenant **sans compte cloud, sans clé API** grâce au backend
+local : vos agents gardent une mémoire persistante dans un fichier SQLite,
+avec recherche sémantique par embeddings.
 
 ```
 ┌────────────────────┐     ┌──────────────────────────────────────┐
-│  Agent / CLI / API │ ──▶ │  Memanto (FastAPI)                   │
+│  Agent / CLI / API │ ──▶ │  Mnemosyne (FastAPI)                 │
 └────────────────────┘     │  MEMANTO_BACKEND=local               │
                            │  ├─ SQLite (memanto.db)              │
                            │  │   namespaces / documents          │
