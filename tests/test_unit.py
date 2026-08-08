@@ -155,7 +155,7 @@ class TestAgentService:
     def mock_moorcheh_client(self):
         """Mock Moorcheh client so unit tests never call external API."""
         with patch(
-            "memanto.app.services.agent_service.MoorchehClient"
+            "memanto.app.clients.moorcheh.MoorchehClient"
         ) as mock_client_cls:
             mock_client = MagicMock()
             mock_client.namespaces.create.return_value = {"status": "created"}

@@ -85,6 +85,12 @@ class Settings(BaseSettings):
     # Moorcheh Configuration
     MOORCHEH_API_KEY: str = ""
 
+    # Backend Selection: "auto" | "local" | "moorcheh"
+    # auto → local when no API key is present, moorcheh otherwise
+    MEMANTO_BACKEND: str = "auto"
+    # SQLite file used by the local backend
+    MEMANTO_DB_PATH: str = "memanto.db"
+
     # Server Configuration
     HOST: str = "0.0.0.0"
     PORT: int = 8000

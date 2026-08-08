@@ -66,7 +66,12 @@ async def verify_moorcheh_api_key(api_key: str = Depends(get_moorcheh_api_key)) 
     """
     from moorcheh_sdk.exceptions import AuthenticationError, NamespaceNotFound
 
-    from memanto.app.clients.moorcheh import get_async_moorcheh_client
+    from memanto.app.clients.moorcheh import get_async_moorcheh_client, _resolve_backend
+
+    # In local backend mode there is nothing to verify against: accept the
+    # key (any non-empty bearer token) without a network round-trip.
+    if _resolve_backend() == "local":
+        return api_key or "local"
 
     client = get_async_moorcheh_client(api_key)
     try:

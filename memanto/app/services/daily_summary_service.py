@@ -8,8 +8,6 @@ import json
 from pathlib import Path
 from typing import Any, cast
 
-from moorcheh_sdk import MoorchehClient
-
 from memanto.app.config import settings
 from memanto.app.core import create_memory_scope
 from memanto.app.services.session_service import get_session_service
@@ -67,7 +65,9 @@ class DailySummaryService:
 
         full_text = "\n\n---\n\n".join(combined_content)
 
-        client = MoorchehClient(api_key=self.api_key)
+        from memanto.app.clients.moorcheh import moorcheh_client as client_singleton
+
+        client = client_singleton.get_client(self.api_key)
         scope = create_memory_scope("agent", agent_id)
         namespace = scope.to_namespace()
 
@@ -147,7 +147,9 @@ Format the output as a Markdown report:
 
         full_text = "\n\n---\n\n".join(combined_content)
 
-        client = MoorchehClient(api_key=self.api_key)
+        from memanto.app.clients.moorcheh import moorcheh_client as client_singleton
+
+        client = client_singleton.get_client(self.api_key)
         scope = create_memory_scope("agent", agent_id)
         namespace = scope.to_namespace()
 

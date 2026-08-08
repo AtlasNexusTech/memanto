@@ -10,7 +10,6 @@ from pathlib import Path
 
 from moorcheh_sdk.exceptions import ConflictError
 
-from memanto.app.clients.moorcheh import MoorchehClient
 from memanto.app.core import create_memory_scope
 from memanto.app.models.session import AgentCreate, AgentInfo, AgentList
 from memanto.app.utils.errors import AgentAlreadyExistsError, AgentNotFoundError
@@ -66,15 +65,17 @@ class AgentService:
 
         namespace = self._generate_namespace(agent_create.agent_id)
 
-        # Create namespace in Moorcheh - CRITICAL: Must succeed
+        # Create namespace (Moorcheh cloud or local backend) - CRITICAL: Must succeed
         from typing import Any
 
-        client = MoorchehClient(moorcheh_api_key)
+        from memanto.app.clients.moorcheh import moorcheh_client as client_singleton
+
+        client = client_singleton.get_client(moorcheh_api_key)
         namespace_created = False
         namespace_info: Any = None
 
         try:
-            # Use Moorcheh SDK to create namespace with type="text"
+            # Create namespace with type="text" (local backend ignores network)
             result = client.namespaces.create(namespace, type="text")
             namespace_created = True
             print(f"[OK] Namespace created in Moorcheh: {namespace}")
