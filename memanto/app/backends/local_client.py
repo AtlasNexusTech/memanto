@@ -17,10 +17,13 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from memanto.app.backends.embeddings import EmbeddingEngine
 from memanto.app.backends.store import LocalStore
+
+if TYPE_CHECKING:  # pragma: no cover
+    from memanto.app.backends.llm_client import LocalLLMClient
 
 
 class _Documents:
@@ -108,9 +111,15 @@ class _SimilaritySearch:
 
 
 class _Answer:
-    def __init__(self, store: LocalStore, engine: EmbeddingEngine):
+    def __init__(
+        self,
+        store: LocalStore,
+        engine: EmbeddingEngine,
+        llm: "LocalLLMClient | None" = None,
+    ):
         self._store = store
         self._engine = engine
+        self._llm = llm
 
     def generate(
         self,
@@ -165,6 +174,24 @@ class _Answer:
         if footer_prompt:
             answer = f"{answer}\n\n{footer_prompt}"
 
+        # Optional: use the local LLM (Ollama) to write a real prose answer.
+        # Fails soft — extractive answer above remains the fallback.
+        if self._llm is not None:
+            try:
+                prose = self._llm.generate_answer(
+                    query=query,
+                    context=results[:3],
+                    header_prompt=header_prompt
+                    or "You are a helpful AI assistant with access to the agent's persistent memory.",
+                    footer_prompt=footer_prompt
+                    or "Answer concisely based on the memory context above.",
+                    temperature=temperature,
+                )
+                if prose:
+                    answer = prose
+            except Exception:
+                pass  # keep extractive answer
+
         return {
             "answer": answer,
             "model": ai_model,
@@ -178,7 +205,12 @@ class _Answer:
 class LocalMoorchehClient:
     """Moorcheh-compatible client backed by SQLite + local embeddings."""
 
-    def __init__(self, db_path: str | Path = "memanto.db", use_fastembed: bool = False):
+    def __init__(
+        self,
+        db_path: str | Path = "memanto.db",
+        use_fastembed: bool = False,
+        llm: "LocalLLMClient | None" = None,
+    ):
         self.api_key = "local"
         self.base_url = "local://sqlite"
         self.timeout = 0
@@ -187,7 +219,7 @@ class LocalMoorchehClient:
         self.documents = _Documents(self._store)
         self.namespaces = _Namespaces(self._store)
         self.similarity_search = _SimilaritySearch(self._store, self._engine)
-        self.answer = _Answer(self._store, self._engine)
+        self.answer = _Answer(self._store, self._engine, llm=llm)
 
     def close(self) -> None:
         self._store.close()

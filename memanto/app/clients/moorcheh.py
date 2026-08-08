@@ -5,6 +5,7 @@ Moorcheh Client Singleton
 from fastapi import Depends
 from moorcheh_sdk import AsyncMoorchehClient, MoorchehClient
 
+from memanto.app.backends.llm_client import LocalLLMClient
 from memanto.app.backends.local_client import LocalMoorchehClient
 from memanto.app.config import settings
 from memanto.app.routes.auth_deps import get_moorcheh_api_key
@@ -36,10 +37,16 @@ class MoorchehClientSingleton:
         return _resolve_backend()
 
     def get_local_client(self) -> LocalMoorchehClient:
-        """Get or create the local SQLite-backed client."""
+        """Get or create the local SQLite-backed client (with optional LLM)."""
         if self._local_client is None:
+            llm = None
+            if settings.OLLAMA_ENABLED:
+                llm = LocalLLMClient(
+                    base_url=settings.OLLAMA_BASE_URL,
+                    model=settings.OLLAMA_MODEL,
+                )
             self._local_client = LocalMoorchehClient(
-                db_path=settings.MEMANTO_DB_PATH
+                db_path=settings.MEMANTO_DB_PATH, llm=llm
             )
         return self._local_client
 

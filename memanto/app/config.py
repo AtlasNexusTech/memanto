@@ -91,6 +91,11 @@ class Settings(BaseSettings):
     # SQLite file used by the local backend
     MEMANTO_DB_PATH: str = "memanto.db"
 
+    # Local LLM (Ollama / OpenAI-compatible) — optional, fails soft
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3.2"
+    OLLAMA_ENABLED: bool = True
+
     # Server Configuration
     HOST: str = "0.0.0.0"
     PORT: int = 8000

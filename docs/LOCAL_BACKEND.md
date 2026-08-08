@@ -79,6 +79,27 @@ Le client local expose la même surface que `moorcheh_sdk.MoorchehClient` :
 - Optionnel : si `fastembed` est installé, il est utilisé pour de vraies
   embeddings (dimension 384)
 
+## LLM local (optionnel)
+
+`LocalLLMClient` (dans `memanto/app/backends/llm_client.py`) parle à n'importe
+quel endpoint OpenAI-compatible — Ollama par défaut (`http://localhost:11434`).
+
+| Variable | Défaut |
+|---|---|
+| `OLLAMA_BASE_URL` | `http://localhost:11434` |
+| `OLLAMA_MODEL` | `llama3.2` |
+| `OLLAMA_ENABLED` | `true` |
+
+Utilisé pour :
+- **`answer.generate`** : rédige une réponse en prose à partir du contexte
+  rappelé (au lieu de la réponse extractive brute)
+- **`check_contradiction`** : demande au LLM si une nouvelle mémoire
+  contredit des mémoires existantes (JSON structuré) — base du supersede
+
+**Fails soft** : si Ollama est injoignable ou renvoie une erreur,
+`answer.generate` retombe automatiquement sur la réponse extractive.
+L'API ne casse jamais. Voir `tests/test_local_llm.py` (faux serveur Ollama).
+
 ## Stockage
 
 `LocalStore` (dans `memanto/app/backends/store.py`) — SQLite avec :
@@ -101,10 +122,10 @@ réponse extractive, suppression douce.
 ## Limitations actuelles
 
 - **Détection de contradiction / supersede** : le stockage et le rappel
-  fonctionnent en local, mais la détection automatique des contradictions
-  (qui reposait sur un LLM cloud) n'est pas encore portée en local.
-- **`answer.generate`** : réponse extractive (meilleurs passages) — pas une
-  génération LLM. La génération d'un résumé rédigé nécessite un LLM local
-  ou le mode cloud.
-- **Résumés quotidiens / conflits** : nécessitent un LLM (mode cloud ou
-  branchement ultérieur sur un LLM local).
+  fonctionnent en local, et `LocalLLMClient.check_contradiction` est prêt
+  (JSON structuré) — il reste à brancher l'appel dans le flux d'écriture
+  (exécution : nécessite Ollama, prévu sur la machine LOQ le 21/08).
+- **`answer.generate`** : réponse extractive par défaut ; réponse rédigée
+  automatiquement si Ollama est joignable (fails soft sinon).
+- **Résumés quotidiens / conflits** : nécessitent un LLM local (Ollama) —
+  les services existants passent par le singleton et héritent du fallback.
